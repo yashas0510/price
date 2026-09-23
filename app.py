@@ -18,6 +18,19 @@ except Exception:
     st.error("Authentication is not configured. Please contact the administrator.")
     st.stop()
 
+def get_serper_key():
+    # Top-level key (canonical layout): SERPER_API_KEY = "..."
+    try:
+        return st.secrets["SERPER_API_KEY"]
+    except KeyError:
+        pass
+    # Tolerate key nested under [auth] (TOML puts every key after
+    # an [auth] header into that table unless a new header starts).
+    try:
+        return st.secrets["auth"]["SERPER_API_KEY"]
+    except KeyError:
+        return None
+
 def check_login():
     if "logged_in" not in st.session_state:
         st.session_state.logged_in = False
@@ -62,10 +75,9 @@ def main_app():
     st.title("🛍️ Competitor Price & Product Monitor")
     st.write("Compare real-time prices across Google Shopping vendors securely.")
 
-    # --- SECURE API KEY EXTRACTION ---
-    try:
-        api_key = st.secrets["SERPER_API_KEY"]
-    except KeyError:
+    # --- SECURE API KEY EXTRACTION (Streamlit Secrets only, never env/hardcoded) ---
+    api_key = get_serper_key()
+    if not api_key:
         st.error("Service is not configured. Please contact the administrator.")
         st.stop()
 
