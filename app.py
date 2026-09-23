@@ -5,18 +5,10 @@ import re
 
 st.set_page_config(page_title="Competitor Price Monitor", layout="wide", initial_sidebar_state="collapsed")
 
-# --- LOGIN CONFIG ---
-# Set credentials in Streamlit Secrets (for deployed version)
+# --- SECRETS CONFIG ---
+# Only SERPER_API_KEY is required (Streamlit Secrets, never hardcoded).
 # In Streamlit Cloud: Settings -> Secrets -> Add:
-# [auth]
-# username = "YOUR_USERNAME"
-# password = "YOUR_PASSWORD"
-try:
-    AUTH_USER = st.secrets["auth"]["username"]
-    AUTH_PASS = st.secrets["auth"]["password"]
-except Exception:
-    st.error("Authentication is not configured. Please contact the administrator.")
-    st.stop()
+# SERPER_API_KEY = "YOUR_KEY_HERE"
 
 def get_serper_key():
     # Top-level key (canonical layout): SERPER_API_KEY = "..."
@@ -31,43 +23,8 @@ def get_serper_key():
     except KeyError:
         return None
 
-def check_login():
-    if "logged_in" not in st.session_state:
-        st.session_state.logged_in = False
-
-check_login()
-
-def login_page():
-    st.markdown("""
-        <style>
-        .login-container { max-width: 400px; margin: auto; padding-top: 50px; }
-        </style>
-    """, unsafe_allow_html=True)
-    
-    col1, col2, col3 = st.columns([1,2,1])
-    with col2:
-        st.title("🔐 Login")
-        st.write("Please login to access Price Monitor")
-        
-        username = st.text_input("Username", placeholder="Enter username")
-        password = st.text_input("Password", type="password", placeholder="Enter password")
-        
-        if st.button("Login", use_container_width=True, type="primary"):
-            if username == AUTH_USER and password == AUTH_PASS:
-                st.session_state.logged_in = True
-                st.success("Login successful!")
-                st.rerun()
-            else:
-                st.error("Invalid username or password")
-
 def main_app():
-    # Logout button in sidebar
     with st.sidebar:
-        st.write("Logged in")
-        if st.button("Logout"):
-            st.session_state.logged_in = False
-            st.rerun()
-        st.divider()
         country = st.selectbox("Target Country Code", ["us", "in", "gb", "ca"], index=0)
         st.markdown("---")
         st.caption("Secure mode: API key loaded from secrets")
@@ -151,8 +108,5 @@ def main_app():
             except Exception as e:
                 st.error(f"An error occurred: {e}")
 
-# --- ROUTING ---
-if not st.session_state.logged_in:
-    login_page()
-else:
-    main_app()
+# --- APP ---
+main_app()
