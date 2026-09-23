@@ -6,18 +6,17 @@ import re
 st.set_page_config(page_title="Competitor Price Monitor", layout="wide", initial_sidebar_state="collapsed")
 
 # --- LOGIN CONFIG ---
-# Set credentials in Streamlit Secrets (for deployed version) or use fallback demo credentials
+# Set credentials in Streamlit Secrets (for deployed version)
 # In Streamlit Cloud: Settings -> Secrets -> Add:
 # [auth]
-# username = "admin"
-# password = "admin123"
+# username = "YOUR_USERNAME"
+# password = "YOUR_PASSWORD"
 try:
     AUTH_USER = st.secrets["auth"]["username"]
     AUTH_PASS = st.secrets["auth"]["password"]
-except:
-    # Fallback for local testing - CHANGE THESE before deploying to production
-    AUTH_USER = "admin"
-    AUTH_PASS = "admin123"
+except Exception:
+    st.error("Authentication is not configured. Please contact the administrator.")
+    st.stop()
 
 def check_login():
     if "logged_in" not in st.session_state:
@@ -48,12 +47,10 @@ def login_page():
             else:
                 st.error("Invalid username or password")
 
-        st.info("Demo: admin / admin123")
-
 def main_app():
     # Logout button in sidebar
     with st.sidebar:
-        st.write(f"Logged in as: **{AUTH_USER}**")
+        st.write("Logged in")
         if st.button("Logout"):
             st.session_state.logged_in = False
             st.rerun()
@@ -69,8 +66,7 @@ def main_app():
     try:
         api_key = st.secrets["SERPER_API_KEY"]
     except KeyError:
-        st.error("API Key missing! Please set SERPER_API_KEY in Streamlit Secrets.")
-        st.code('''[auth]\nusername="admin"\npassword="admin123"\n\nSERPER_API_KEY="your_key_here"''')
+        st.error("Service is not configured. Please contact the administrator.")
         st.stop()
 
     product_query = st.text_input("Enter product name (e.g., Sony WH-1000XM4)", "")
